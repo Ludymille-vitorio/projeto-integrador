@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de livros</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 60%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        form {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input,textarea,select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        select {
+            background-color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cadastro de livros</h1>
+        <form id="bookForm">
+            <label for="title">Título:</label>
+            <input type="text" id="title" required>
+
+            <label for="author">Autor:</label>
+            <input type="text" id="author" required>
+
+            <label for="genero">Gênero:</label>
+            <input type="text" id="genero" required>
+
+            <label for="review">Resenha:</label>
+            <textarea id="review" rows="4"></textarea>
+
+            <label for="rating">Classificação(1 a 5):</label>
+            <input type="number" id="rating" min="1" max="5" required>
+
+            <label for="status">Status:</label>
+            <select id="status">
+                <option value="lido">Lido</option>
+                <option value="desejo">Desejo de Compra</option>
+            </select>
+
+            <button type="button" onclick="addBook()">Adicionar Livro</button>
+        </form>
+
+        <label for="sortCriteria">Ordenar por:</label>
+        <select id="sortCriteria" onchange="sortBooks()">
+            <option value="title">Título</option>
+            <option value="author">Autor</option>
+            <option value="rating">Classificação</option>
+        </select>
+
+        <table id="bookTable">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>Gênero</th>
+                    <th>Resenha</th>
+                    <th>Classificação</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let books = []
+
+        document.addEventListener('DOMContentLoaded', loadBooks);
+
+        function loadBooks() {
+            const savedBooks = localStorage.getItem('books');
+            console.log('Livros recuperados do localStorage:', savedBooks);
+            if (savedBooks) {
+                books = JSON.parse(savedBooks);
+                console.log('Livros carregados:', books);
+                updateTable();
+            }
+        }
+
+        function saveBooks () {
+            localStorage.setItem('books', JSON.stringify(books));
+            console.log('Livros salvos no localStorage:', books);
+        }
+
+        function addBook() {
+            const title = document.getElementById('title').value
+            const author = document.getElementById('author').value
+            const genero = document.getElementById('genero').value
+            const review = document.getElementById('review').value
+            const rating = parseInt(document.getElementById('rating').value)
+            const status = document.getElementById('status').value
+
+            if (title && author && rating) {
+                if (rating > 5) {
+                    alert('A classificação deve ser de 1-"péssimo" a 5-"muito bom".')
+                    return
+                }
+                const book = {title, author, genero, review, rating, status}
+                books.push(book)
+                console.log('Livro adicionado:', book)
+                updateTable()
+                saveBooks()
+                document.getElementById('bookForm').reset()
+            } else {
+                alert('Preencha todos os campos obrigatórios')
+            }
+        }
+
+        function updateTable() {
+            const tbody = document.querySelector('#bookTable tbody')
+            tbody.innerHTML = ""
+            books.forEach(book => {
+                const row = document.createElement('tr')
+                row.innerHTML = `
+                <td>${book.title}</td>
+                <td>${book.author}</td>
+                <td>${book.genero}</td>
+                <td>${book.review}</td>
+                <td>${book.rating}</td>
+                <td>${book.status}</td>`
+                tbody.appendChild(row)
+            })
+        }
+
+        function sortBooks() {
+            const criteria = document.getElementById('sortCriteria').value
+            books.sort((a, b) => {
+                if (a[criteria] > b[criteria]) return 1;
+                if (a[criteria] < b[criteria]) return -1;
+                return 0;
+            })
+            updateTable()
+        }
+    </script>
+</body>
+</html>
